@@ -12,7 +12,7 @@ router.post('/', function(req, res, next) {
     from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
     to: 'nicholas.tyler.brown+link-a-day@gmail.com',
     subject: 'Link-a-Day',
-    text: req.body
+    text: 'here is a body: ' + req
   };
   console.log(data);
   mailgun.messages().send(data, function (error, body) {
