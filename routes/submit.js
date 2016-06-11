@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var firebase = require('firebase');
+var MetaInspector = require('node-metainspector');
 
 var api_key = 'key-b9f6ce56812f37467732aaf3097f88f7'; // TODO gen new API key, get this out of git
 var domain = 'mg.quanticle.co';
@@ -37,11 +38,18 @@ var parseInboundLink = function(postBody) {
 
 var addToLinkQueue = function(recommendation,recommenderId) {
   var newLinkRef = linksRef.push();
-  newLinkRef.set({
-    recommenderId: recommenderId,
-    url: recommendation.url,
-    blurb: recommendation.blurb
+  var recommendationTitle = recommendation.url;
+
+  var client = new MetaInspector(recommendation.url, {timeout:15000});
+  client.on("fetch", function(){
+    newLinkRef.set({
+      recommenderId: recommenderId,
+      url: recommendation.url,
+      title: client.title,
+      blurb: recommendation.blurb
+    });
   });
+  client.fetch();
   return newLinkRef.key;
 };
 
