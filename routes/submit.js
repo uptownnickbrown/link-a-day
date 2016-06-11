@@ -14,6 +14,7 @@ var mailgun = require('mailgun-js')({
 var db = firebase.database();
 var linksRef = db.ref("links");
 var usersRef = db.ref("users");
+var connectionsRef = db.ref("connections");
 
 // Parse POST request body into fields we care about
 var parseInboundLink = function(postBody) {
@@ -65,15 +66,11 @@ var retrieveFromLinkQueue = function(findForUser,callback) {
   });
 };
 
-var sendOutboundLink = function(link,recommendation) {
-
-};
-
-
 /* POST email reception. */
 router.post('/', function(req, res) {
   var mailgunBody = req.body;
   var recommendation = parseInboundLink(mailgunBody);
+  var recommenderId = '';
 
   // check to see if we've seen this recommender before
   usersRef.orderByChild("email").equalTo(recommendation.submitterEmail.toLowerCase()).once('value',function(snapshot){
@@ -81,27 +78,38 @@ router.post('/', function(req, res) {
     if (user) {
       // The user already exists, add a recommendation linked to them
       addToLinkQueue(recommendation,Object.keys(user)[0]);
+      recommenderId = Object.keys(user)[0]
     } else {
       // Add the user, and then add the link
       var newUserKey = addNewUser(recommendation);
+      recommenderId = newUserKey;
       addToLinkQueue(recommendation,newUserKey);
     }
-  });
 
-  var newRecommendation = retrieveFromLinkQueue(recommendation.submitterEmail,function(newRecommendation) {
-    var recommendationRef = db.ref("links/" + newRecommendation);
-    recommendationRef.once('value',function(snapshot){
-      var outboundRecommendation = snapshot.val();
-      var outboundBody = 'Thanks for submitting:\n\n' + recommendation.url + '\n\nto Link-a-Day. We\'ll get that shared with someone soon and let you know if they want to chat.\n\nIn the meantime, take a look at this great recommendation:\n\n' + outboundRecommendation.url + '\n\n' + outboundRecommendation.blurb + '\n\nHope you enjoy it!\n- Link-a-Day';
-      mailgun.messages().send({
-        from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
-        to: recommendation.submitterEmail,
-        subject: 'New Recommendation from Link-a-Day',
-        text: outboundBody
-      }, function (error, body) {
-        res.send('OK');
+    var newRecommendation = retrieveFromLinkQueue(recommenderId,function(newRecommendation) {
+      var recommendationRef = db.ref("links/" + newRecommendation);
+      recommendationRef.once('value',function(snapshot){
+        var outboundRecommendation = snapshot.val();
+        var outboundBody = 'Thanks for submitting:\n\n' + recommendation.url + '\n\nto Link-a-Day. We\'ll get that shared with someone soon and let you know if they want to chat.\n\nIn the meantime, take a look at this great recommendation:\n\n' + outboundRecommendation.url + '\n\n' + outboundRecommendation.blurb + '\n\nHope you enjoy it!\n- Link-a-Day';
+        mailgun.messages().send({
+          from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
+          to: recommendation.submitterEmail,
+          subject: 'New Recommendation from Link-a-Day',
+          text: outboundBody
+        }, function (error, body) {
+          var newConnectionRef = connectionsRef.push();
+          var connection = {
+            from: outboundRecommendation.recommenderId,
+            to: recommenderId,
+            linkId: newRecommendation,
+            replied: 0
+          };
+          newConnectionRef.set(connection);
+          res.send('OK');
+        });
       });
     });
+
   });
 });
 

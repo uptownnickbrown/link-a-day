@@ -13,8 +13,8 @@ var firebaseApp = firebase.initializeApp({
 });
 
 var routes = require('./routes/index');
-var send = require('./routes/send');
-var receive = require('./routes/receive');
+var submit = require('./routes/submit');
+var reply = require('./routes/reply');
 
 var app = express();
 
@@ -31,8 +31,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/send', send);
-app.use('/receive', receive);
+app.use('/submit', submit);
+app.use('/reply', reply);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
