@@ -31,19 +31,24 @@ var parseReply = function(postBody,postHeaders) {
     response: messageBody,
     id: messageID
   };
+  console.log(reply);
   return reply;
 };
 
 /* POST email reception. */
 router.post('/', function(req, res) {
   var mailgunBody = req.body;
+  console.log(mailgunBody);
   var mailgunHeaders = req.headers;
+  console.log(mailgunHeaders);
   var reply = parseReply(mailgunBody,mailgunHeaders);
-
+  console.log(reply);
 
   connectionsRef.orderByChild("messageId").equalTo(reply.id).once('value',function(snapshot){
     var connection = snapshot.val();
+    console.log(connection);
     var connectionId = Object.keys(connection)[0];
+    console.log(connectionId);
     var getInitialLink = db.ref("links/" + connection[connectionId]['linkId']);
     getInitialLink.once('value',function(snapshot) {
       var link = snapshot.val();
