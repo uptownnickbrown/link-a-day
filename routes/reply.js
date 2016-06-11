@@ -20,7 +20,7 @@ var connectionsRef = db.ref("connections");
 var parseReply = function(postBody,postHeaders) {
   var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
-  var messageID = postHeaders['in-reply-to'];
+  var messageID = postBody['in-reply-to'];
 
   var messageFrom = postBody['From'];
   messageFrom = messageFrom.replace(/ \<.*\>/,'');
