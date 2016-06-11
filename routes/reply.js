@@ -16,11 +16,12 @@ var linksRef = db.ref("links");
 var usersRef = db.ref("users");
 
 // Parse POST request body into fields we care about
-var parseReply = function(postBody) {
+var parseReply = function(postBody,postHeaders) {
   console.log(postBody);
-  var messageSubject = postBody['subject'];
+  console.log(postHeaders);
   var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
+  var connectionId = postHeaders['Message-Id'];
 
   var messageFrom = postBody['From'];
   messageFrom = messageFrom.replace(/ \<.*\>/,'');
@@ -38,7 +39,8 @@ var parseReply = function(postBody) {
 /* POST email reception. */
 router.post('/', function(req, res) {
   var mailgunBody = req.body;
-  var reply = parseReply(mailgunBody);
+  var mailgunHeaders = req.headers;
+  var reply = parseReply(mailgunBody,mailgunHeaders);
 
   //var outboundSubject = reply.name + ' wants to talk about ' + reply.url;
   //var outboundBody = 'Must have been a cool article / video / link - ' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
@@ -48,9 +50,9 @@ router.post('/', function(req, res) {
   //  subject: 'New Recommendation from Link-a-Day',
   //  text: outboundBody
   //}, function (error, body) {
-  //  res.send('OK');
+  //
   //});
-
+  res.send('OK');
 });
 
 module.exports = router;
