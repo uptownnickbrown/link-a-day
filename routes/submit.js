@@ -91,20 +91,25 @@ router.post('/', function(req, res) {
       recommendationRef.once('value',function(snapshot){
         var outboundRecommendation = snapshot.val();
         var outboundBody = 'Thanks for submitting:\n\n' + recommendation.url + '\n\nto Link-a-Day. We\'ll get that shared with someone soon and let you know if they want to chat.\n\nIn the meantime, take a look at this great recommendation:\n\n' + outboundRecommendation.url + '\n\n' + outboundRecommendation.blurb + '\n\nHope you enjoy it!\n- Link-a-Day';
+
+        var newConnectionRef = connectionsRef.push();
+        var connection = {
+          from: outboundRecommendation.recommenderId,
+          to: recommenderId,
+          linkId: newRecommendation,
+          sent: 0,
+          replied: 0
+        };
+        newConnectionRef.set(connection);
+
         mailgun.messages().send({
           from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
           to: recommendation.submitterEmail,
           subject: 'New Recommendation from Link-a-Day',
-          text: outboundBody
+          text: outboundBody,
+          'h:Message-Id' : '<' + newConnectionRef + '@mg.quanticle.co>'
         }, function (error, body) {
-          var newConnectionRef = connectionsRef.push();
-          var connection = {
-            from: outboundRecommendation.recommenderId,
-            to: recommenderId,
-            linkId: newRecommendation,
-            replied: 0
-          };
-          newConnectionRef.set(connection);
+          newConnectionRef.update({sent:1});
           res.send('OK');
         });
       });
