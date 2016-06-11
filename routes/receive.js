@@ -7,12 +7,13 @@ var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
 
 /* POST email reception. */
 router.post('/', function(req, res, next) {
-  console.log(req.body-plain);
+  console.log(req.form);
+  console.log(req['body-plain']);
   var data = {
     from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
     to: 'nicholas.tyler.brown+link-a-day@gmail.com',
     subject: 'Link-a-Day',
-    text: req.body-plain
+    text: req.form
   };
   console.log(data);
   mailgun.messages().send(data, function (error, body) {
