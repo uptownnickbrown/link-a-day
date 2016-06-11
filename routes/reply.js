@@ -21,6 +21,9 @@ var parseReply = function(postBody,postHeaders) {
   var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
   var messageID = postBody['in-reply-to'];
+  var messageIDCaps = postBody['In-Reply-To'];
+  console.log('caps:' + messageIDCaps);
+  console.log('no caps:' + messageID);
 
   var messageFrom = postBody['From'];
   messageFrom = messageFrom.replace(/ \<.*\>/,'');
@@ -29,7 +32,7 @@ var parseReply = function(postBody,postHeaders) {
     email: messageSender,
     name: messageFrom,
     response: messageBody,
-    id: messageID
+    id: messageID || messageIDCaps
   };
   console.log(reply);
   return reply;
@@ -38,11 +41,9 @@ var parseReply = function(postBody,postHeaders) {
 /* POST email reception. */
 router.post('/', function(req, res) {
   var mailgunBody = req.body;
-  console.log(mailgunBody);
+  console.log('This is the BODY' + mailgunBody);
   var mailgunHeaders = req.headers;
-  console.log(mailgunHeaders);
   var reply = parseReply(mailgunBody,mailgunHeaders);
-  console.log(reply);
 
   connectionsRef.orderByChild("messageId").equalTo(reply.id).once('value',function(snapshot){
     var connection = snapshot.val();
