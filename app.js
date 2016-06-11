@@ -4,6 +4,13 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var firebase = require('firebase');
+
+// Init DB access
+var firebaseApp = firebase.initializeApp({
+  serviceAccount: "./link-a-day-9ece42ff92f0.json",
+  databaseURL: "https://link-a-day.firebaseio.com"
+});
 
 var routes = require('./routes/index');
 var send = require('./routes/send');
@@ -57,6 +64,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;
