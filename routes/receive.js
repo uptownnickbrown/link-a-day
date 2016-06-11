@@ -6,16 +6,16 @@ var domain = 'mg.quanticle.co';
 var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
 
 /* POST email reception. */
-router.post('/', function(req, res, next) {
-  console.log(req.form);
-  console.log(req['body-plain']);
+router.post('/', function(req, res) {
+  console.log(req);
+  console.log(req.body);
+  console.log(req.body.message);
   var data = {
     from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
     to: 'nicholas.tyler.brown+link-a-day@gmail.com',
     subject: 'Link-a-Day',
-    text: req.form
+    text: req.body.message
   };
-  console.log(data);
   mailgun.messages().send(data, function (error, body) {
     res.send('OK');
   });
