@@ -14,14 +14,13 @@ var mailgun = require('mailgun-js')({
 var db = firebase.database();
 var linksRef = db.ref("links");
 var usersRef = db.ref("users");
+var connectionsRef = db.ref("connections");
 
 // Parse POST request body into fields we care about
 var parseReply = function(postBody,postHeaders) {
-  console.log(postBody);
-  console.log(postHeaders);
   var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
-  var connectionId = postHeaders['Message-Id'];
+  var messageID = postHeaders['in-reply-to'];
 
   var messageFrom = postBody['From'];
   messageFrom = messageFrom.replace(/ \<.*\>/,'');
@@ -29,10 +28,9 @@ var parseReply = function(postBody,postHeaders) {
   var reply = {
     email: messageSender,
     name: messageFrom,
-    url: messageSubject,
-    response: messageBody
+    response: messageBody,
+    id: messageID
   };
-
   return reply;
 };
 
@@ -42,17 +40,31 @@ router.post('/', function(req, res) {
   var mailgunHeaders = req.headers;
   var reply = parseReply(mailgunBody,mailgunHeaders);
 
-  //var outboundSubject = reply.name + ' wants to talk about ' + reply.url;
-  //var outboundBody = 'Must have been a cool article / video / link - ' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
-  //mailgun.messages().send({
-  //  from: reply.sender,
-  //  to: recommendation.submitterEmail,
-  //  subject: 'New Recommendation from Link-a-Day',
-  //  text: outboundBody
-  //}, function (error, body) {
-  //
-  //});
-  res.send('OK');
+
+  connectionsRef.orderByChild("messageId").equalTo(reply.id).once('value',function(snapshot){
+    var connection = snapshot.val();
+    var connectionId = Object.keys(connection)[0];
+    var getInitialLink = db.ref("links/" + connection[connectionId]['linkId']);
+    getInitialLink.once('value',function(snapshot) {
+      var link = snapshot.val();
+      var linkURL = link.url;
+      var getInitialSubmitter = db.ref("users/" + link.recommenderId + "/email");
+      getInitialSubmitter.once('value',function(snapshot) {
+        var sendTo = snapshot.val();
+        var outboundSubject = reply.name + ' wants to talk about ' + linkURL;
+        var outboundBody = 'Must have been a cool article / video / link / whatever...' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
+
+        mailgun.messages().send({
+          from: reply.email,
+          to: sendTo,
+          subject: outboundSubject,
+          text: outboundBody
+        }, function (error, body) {
+          res.send(body);
+        });
+      });
+    });
+  });
 });
 
 module.exports = router;

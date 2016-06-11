@@ -108,7 +108,7 @@ router.post('/', function(req, res) {
             replied: 0
           };
           newConnectionRef.set(connection);
-          res.send('OK');
+          res.send(body);
         });
       });
     });
