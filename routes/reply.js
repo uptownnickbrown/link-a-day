@@ -20,10 +20,7 @@ var connectionsRef = db.ref("connections");
 var parseReply = function(postBody,postHeaders) {
   var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
-  var messageID = postBody['in-reply-to'];
-  var messageIDCaps = postBody['In-Reply-To'];
-  console.log('caps:' + messageIDCaps);
-  console.log('no caps:' + messageID);
+  var messageID = postBody['In-Reply-To'];
 
   var messageFrom = postBody['From'];
   messageFrom = messageFrom.replace(/ \<.*\>/,'');
@@ -32,24 +29,20 @@ var parseReply = function(postBody,postHeaders) {
     email: messageSender,
     name: messageFrom,
     response: messageBody,
-    id: messageID || messageIDCaps
+    id: messageID || '<20160611224536.101606.42180.5B8C0BBB@mg.quanticle.co>'
   };
-  console.log(reply);
   return reply;
 };
 
 /* POST email reception. */
 router.post('/', function(req, res) {
   var mailgunBody = req.body;
-  console.log('This is the BODY' + mailgunBody);
   var mailgunHeaders = req.headers;
   var reply = parseReply(mailgunBody,mailgunHeaders);
 
   connectionsRef.orderByChild("messageId").equalTo(reply.id).once('value',function(snapshot){
     var connection = snapshot.val();
-    console.log(connection);
     var connectionId = Object.keys(connection)[0];
-    console.log(connectionId);
     var getInitialLink = db.ref("links/" + connection[connectionId]['linkId']);
     getInitialLink.once('value',function(snapshot) {
       var link = snapshot.val();
@@ -59,7 +52,6 @@ router.post('/', function(req, res) {
         var sendTo = snapshot.val();
         var outboundSubject = reply.name + ' wants to talk about ' + linkURL;
         var outboundBody = 'Must have been a cool article / video / link / whatever...' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
-
         mailgun.messages().send({
           from: reply.email,
           to: sendTo,
