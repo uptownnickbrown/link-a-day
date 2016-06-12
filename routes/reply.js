@@ -29,7 +29,7 @@ var parseReply = function(postBody,postHeaders) {
     email: messageSender,
     name: messageFrom,
     response: messageBody,
-    id: messageID || '<20160611224536.101606.42180.5B8C0BBB@mg.quanticle.co>'
+    id: messageID
   };
   return reply;
 };
@@ -40,29 +40,37 @@ router.post('/', function(req, res) {
   var mailgunHeaders = req.headers;
   var reply = parseReply(mailgunBody,mailgunHeaders);
 
-  connectionsRef.orderByChild("messageId").equalTo(reply.id).once('value',function(snapshot){
-    var connection = snapshot.val();
-    var connectionId = Object.keys(connection)[0];
-    var getInitialLink = db.ref("links/" + connection[connectionId]['linkId']);
-    getInitialLink.once('value',function(snapshot) {
-      var link = snapshot.val();
-      var linkURL = link.url;
-      var getInitialSubmitter = db.ref("users/" + link.recommenderId + "/email");
-      getInitialSubmitter.once('value',function(snapshot) {
-        var sendTo = snapshot.val();
-        var outboundSubject = reply.name + ' wants to talk about ' + linkURL;
-        var outboundBody = 'Must have been a cool article / video / link / whatever...' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
-        mailgun.messages().send({
-          from: reply.email,
-          to: sendTo,
-          subject: outboundSubject,
-          text: outboundBody
-        }, function (error, body) {
-          res.send(body);
+  if (reply.id) {
+    console.log('we have a message ID!')
+    connectionsRef.orderByChild("messageId").equalTo(reply.id).once('value',function(snapshot){
+      var connection = snapshot.val();
+      var connectionId = Object.keys(connection)[0];
+      var getInitialLink = db.ref("links/" + connection[connectionId]['linkId']);
+      console.log('go get the link!')
+      getInitialLink.once('value',function(snapshot) {
+        var link = snapshot.val();
+        var linkURL = link.url;
+        var getInitialSubmitter = db.ref("users/" + link.recommenderId + "/email");
+        console.log('Get the initial emailer from the link')
+        getInitialSubmitter.once('value',function(snapshot) {
+          var sendTo = snapshot.val();
+          console.log(sendTo);
+          var outboundSubject = reply.name + ' wants to talk about ' + linkURL;
+          var outboundBody = 'Must have been a cool article / video / link / whatever...' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
+          mailgun.messages().send({
+            from: reply.email,
+            to: sendTo,
+            subject: outboundSubject,
+            text: outboundBody
+          }, function (error, body) {
+            res.send(body);
+          });
         });
       });
     });
-  });
+  } else {
+    res.status(406).send({ error: "no message id!:" });
+  }
 });
 
 module.exports = router;
