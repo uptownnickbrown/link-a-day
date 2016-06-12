@@ -16,6 +16,7 @@
     "mailgun-js": "^0.7.11",
     "morgan": "~1.6.1",
     "request": "^2.72.0",
-    "serve-favicon": "~2.3.0"
+    "serve-favicon": "~2.3.0",
+    "valid-url": "^1.0.9"
   }
 }
