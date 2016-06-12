@@ -101,7 +101,7 @@ router.post('/', function(req, res) {
         var recommendationRef = db.ref("links/" + newRecommendation);
         recommendationRef.once('value',function(snapshot){
           var outboundRecommendation = snapshot.val();
-          var outboundBody = 'Thanks for submitting ' + recommendation.url + ' to Link-a-Day. We\'ll get that shared with someone soon and let you know if they want to chat.\n\nIn the meantime, take a look at this great recommendation "' + outboundRecommendation.title + '":\n' + outboundRecommendation.url + '\n\nSomeone loved this link, saying "' + outboundRecommendation.blurb + '"\n\nHope you enjoy it! - Link-a-Day';
+          var outboundBody = 'Thanks for submitting ' + recommendation.url + ' to Link-a-Day. We\'ll get that shared with someone soon and let you know if they want to chat.\n\nIn the meantime, take a look at this great recommendation "' + outboundRecommendation.title + '":\n' + outboundRecommendation.url + '\n\nSomeone loved this link, saying "' + outboundRecommendation.blurb + '"\n\nWant to talk more with them about it? Reply to this email and we\'ll connect you right away.\nThanks - Link-a-Day';
 
           mailgun.messages().send({
             from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
