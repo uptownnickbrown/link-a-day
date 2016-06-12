@@ -45,7 +45,7 @@ var addToLinkQueue = function(recommendation,recommenderId) {
     newLinkRef.set({
       recommenderId: recommenderId,
       url: recommendation.url,
-      title: client.title,
+      title: client.title || recommendation.url,
       blurb: recommendation.blurb
     });
   });
