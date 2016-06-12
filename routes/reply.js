@@ -49,16 +49,16 @@ router.post('/', function(req, res) {
       console.log('go get the link!')
       getInitialLink.once('value',function(snapshot) {
         var link = snapshot.val();
-        var linkURL = link.url;
+        var linkTitle = link.title;
         var getInitialSubmitter = db.ref("users/" + link.recommenderId + "/email");
         console.log('Get the initial emailer from the link')
         getInitialSubmitter.once('value',function(snapshot) {
           var sendTo = snapshot.val();
           console.log(sendTo);
-          var outboundSubject = reply.name + ' wants to talk about ' + linkURL;
-          var outboundBody = 'Must have been a cool article / video / link / whatever...' + reply.name + ' wants to chat. Reply to this email to keep the conversation going!\n\n' + reply.response;
+          var outboundSubject = linkTitle;
+          var outboundBody = reply.name + ' had something to say about your link. Reply to this email to keep the conversation going!\n---------------------------\n\n' + reply.response;
           mailgun.messages().send({
-            from: reply.email,
+            from: reply.name + "<" + reply.email + ">",
             to: sendTo,
             subject: outboundSubject,
             text: outboundBody
