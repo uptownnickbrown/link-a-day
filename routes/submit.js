@@ -20,7 +20,7 @@ var usersRef = db.ref("users");
 var connectionsRef = db.ref("connections");
 
 // Parse POST request body into fields we care about
-var parseInboundLink = function(postBody) {
+var parseInboundLink = function(postBody,callback) {
   var messageSubject = postBody['subject'];
   var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
@@ -32,35 +32,35 @@ var parseInboundLink = function(postBody) {
     submitterName: messageFrom,
     submitterEmail: messageSender,
     url: messageSubject,
-    blurb: messageBody
+    blurb: messageBody,
+    title: messageSubject
   };
-
-  return recommendation;
-};
-
-var addToLinkQueue = function(recommendation,recommenderId) {
-  var newLinkRef = linksRef.push();
-  var recommendationTitle = recommendation.url;
 
   request(recommendation.url, function (error, response, html) {
     if (!error && response.statusCode == 200) {
       var $ = cheerio.load(html,{ normalizeWhitespace: true, decodeEntities: true });
       var title = $('title').text();
-      recommendationTitle = title;
+      recommendation.title = title;
     }
     else {
       console.log("Error parsing URL: " + response.statusCode);
     }
-    var newLink = {
-      recommenderId: recommenderId,
-      url: recommendation.url,
-      title: recommendationTitle,
-      blurb: recommendation.blurb
-    };
-    console.log('adding new link to queue');
-    console.log(newLink);
-    newLinkRef.set(newLink);
+    callback(recommendation);
   });
+};
+
+var addToLinkQueue = function(recommendation,recommenderId) {
+  var newLinkRef = linksRef.push();
+
+  var newLink = {
+    recommenderId: recommenderId,
+    url: recommendation.url,
+    title: recommendation.title,
+    blurb: recommendation.blurb
+  };
+  console.log('adding new link to queue');
+  console.log(newLink);
+  newLinkRef.set(newLink);
 
   return newLinkRef.key;
 };
@@ -91,7 +91,7 @@ var buildHTML = function(inbound,outbound) {
   emailHTML = emailHTML + outbound.title;
   emailHTML = emailHTML + " - New Recommendation from Link-a-Day</title></head><body bgcolor=\"#f6f6f6\" style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; -webkit-font-smoothing: antialiased; height: 100%; -webkit-text-size-adjust: none; width: 100% !important; margin: 0; padding: 0;\"><!-- body --><table class=\"body-wrap\" bgcolor=\"#f6f6f6\" style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 20px;\">  <tr style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;\">    <td style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;\"></td>    <td class=\"container\" bgcolor=\"#FFFFFF\" style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; clear: both !important; display: block !important; max-width: 600px !important; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0;\">      <!-- content -->      <div class=\"content\" style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;\">      <table style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;\">        <tr style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;\">          <td style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;\">            <h3 style=\"font-family: 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif; font-size: 22px; line-height: 1.2em; color: #111111; font-weight: 200; margin: 10px 0; padding: 0;\">Hi ";
   emailHTML = emailHTML + inbound.submitterName;
-  emailHTML = emailHTML + ",</h3>            <p style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6em; font-weight: normal; margin: 0 0 10px; padding: 0;\">Thanks for submitting<a href=\"";
+  emailHTML = emailHTML + ",</h3>            <p style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6em; font-weight: normal; margin: 0 0 10px; padding: 0;\">Thanks for submitting <a href=\"";
   emailHTML = emailHTML + inbound.url;
   emailHTML = emailHTML + "\" style=\"font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; color: #348eda; margin: 0; padding: 0;\">";
   emailHTML = emailHTML + inbound.title;
@@ -121,66 +121,66 @@ var buildFailure = function(inbound) {
 /* POST email reception. */
 router.post('/', function(req, res) {
   var mailgunBody = req.body;
-  var recommendation = parseInboundLink(mailgunBody);
-  var recommenderId = '';
-
-  // Is this a valid URL?
-  if (validUrl.isWebUri(recommendation.url)) {
-    console.log('Valid URL, entering the main loop');
-    // check to see if we've seen this recommender before
-    usersRef.orderByChild("email").equalTo(recommendation.submitterEmail.toLowerCase()).once('value',function(snapshot){
-      var user = snapshot.val();
-      if (user) {
-        // The user already exists, add a recommendation linked to them
-        addToLinkQueue(recommendation,Object.keys(user)[0]);
-        recommenderId = Object.keys(user)[0]
-      } else {
-        // Add the user, and then add the link
-        var newUserKey = addNewUser(recommendation);
-        recommenderId = newUserKey;
-        addToLinkQueue(recommendation,newUserKey);
-      }
-      var newRecommendation = retrieveFromLinkQueue(recommenderId,function(newRecommendation) {
-        var recommendationRef = db.ref("links/" + newRecommendation);
-        recommendationRef.once('value',function(snapshot){
-          var outboundRecommendation = snapshot.val();
-          var outboundHTML = buildHTML(recommendation,outboundRecommendation);
-          console.log('Got a good recommendation, sending out a new one.')
-          mailgun.messages().send({
-            from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
-            to: recommendation.submitterEmail,
-            subject: outboundRecommendation.title + ' - New Recommendation from Link-a-Day',
-            html: outboundHTML
-          }, function (error, body) {
-            var newConnectionRef = connectionsRef.push();
-            var connection = {
-              from: outboundRecommendation.recommenderId,
-              to: recommenderId,
-              linkId: newRecommendation,
-              messageId: body.id,
-              sent: 1,
-              replied: 0
-            };
-            newConnectionRef.set(connection);
-            console.log('Added the connection.')
-            console.log(connection);
-            res.send(body);
+    parseInboundLink(mailgunBody,function(recommendation) {
+    var recommenderId = '';
+    // Is this a valid URL?
+    if (validUrl.isWebUri(recommendation.url)) {
+      console.log('Valid URL, entering the main loop');
+      // check to see if we've seen this recommender before
+      usersRef.orderByChild("email").equalTo(recommendation.submitterEmail.toLowerCase()).once('value',function(snapshot){
+        var user = snapshot.val();
+        if (user) {
+          // The user already exists, add a recommendation linked to them
+          addToLinkQueue(recommendation,Object.keys(user)[0]);
+          recommenderId = Object.keys(user)[0]
+        } else {
+          // Add the user, and then add the link
+          var newUserKey = addNewUser(recommendation);
+          recommenderId = newUserKey;
+          addToLinkQueue(recommendation,newUserKey);
+        }
+        var newRecommendation = retrieveFromLinkQueue(recommenderId,function(newRecommendation) {
+          var recommendationRef = db.ref("links/" + newRecommendation);
+          recommendationRef.once('value',function(snapshot){
+            var outboundRecommendation = snapshot.val();
+            var outboundHTML = buildHTML(recommendation,outboundRecommendation);
+            console.log('Got a good recommendation, sending out a new one.')
+            mailgun.messages().send({
+              from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
+              to: recommendation.submitterEmail,
+              subject: outboundRecommendation.title + ' - New Recommendation from Link-a-Day',
+              html: outboundHTML
+            }, function (error, body) {
+              var newConnectionRef = connectionsRef.push();
+              var connection = {
+                from: outboundRecommendation.recommenderId,
+                to: recommenderId,
+                linkId: newRecommendation,
+                messageId: body.id,
+                sent: 1,
+                replied: 0
+              };
+              newConnectionRef.set(connection);
+              console.log('Added the connection.')
+              console.log(connection);
+              res.send(body);
+            });
           });
         });
       });
-    });
-  } else {
-    console.log('Hit a problem - sending out the failure email');
-    // Not a valid URL - send them a reply to re-submit with the proper formatting
-    mailgun.messages().send({
-      from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
-      to: recommendation.submitterEmail,
-      subject: 'Failed to add your link',
-      html: buildFailure(recommendation)
-    }, function (error, body) {
-      res.send(body);
-    });
-  }
+    } else {
+      console.log('Hit a problem - sending out the failure email');
+      // Not a valid URL - send them a reply to re-submit with the proper formatting
+      mailgun.messages().send({
+        from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
+        to: recommendation.submitterEmail,
+        subject: 'Failed to add your link',
+        html: buildFailure(recommendation)
+      }, function (error, body) {
+        res.send(body);
+      });
+    }
+  });
 });
 
 module.exports = router;
