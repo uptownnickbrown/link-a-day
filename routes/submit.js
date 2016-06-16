@@ -5,8 +5,8 @@ var cheerio = require('cheerio');
 var request = require('request');
 var validUrl = require('valid-url');
 
-var api_key = 'key-b9f6ce56812f37467732aaf3097f88f7'; // TODO gen new API key, get this out of git
-var domain = 'mg.quanticle.co';
+var api_key = process.env.MAILGUNKEY;
+var domain = process.env.MAILGUNDOMAIN;
 
 // Init Mailgun API
 var mailgun = require('mailgun-js')({
