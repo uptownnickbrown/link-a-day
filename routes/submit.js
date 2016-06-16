@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var firebase = require('firebase');
 var cheerio = require('cheerio');
-var request = require('request');
+var request = require('request').defaults({maxRedirects:25})
 var validUrl = require('valid-url');
 
 var api_key = process.env.MAILGUNKEY;
@@ -46,7 +46,7 @@ var parseInboundLink = function(postBody,callback) {
         recommendation.title = title;
       }
       else {
-        console.log("Error parsing URL: " + response.statusCode);
+        console.log(error); // log the error but just keep trucking with the URL as the title
       }
       callback(recommendation);
     });
