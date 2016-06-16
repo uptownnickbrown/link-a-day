@@ -18,7 +18,10 @@ var connectionsRef = db.ref("connections");
 
 // Parse POST request body into fields we care about
 var parseReply = function(postBody,postHeaders) {
-  var messageBody = postBody['stripped-html'] || postBody['stripped-text'];
+  var messageBody = postBody['stripped-html'];
+  if (!(messageBody)) {
+    messageBody = postBody['stripped-text'];
+  }
   console.log("Got a response");
   console.log(messageBody);
   var messageSender = postBody['sender'];

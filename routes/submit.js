@@ -22,7 +22,10 @@ var connectionsRef = db.ref("connections");
 // Parse POST request body into fields we care about
 var parseInboundLink = function(postBody,callback) {
   var messageSubject = postBody['subject'];
-  var messageBody = postBody['stripped-html'] || postBody['stripped-text']
+  var messageBody = postBody['stripped-html'];
+  if (!(messageBody)) {
+    messageBody = postBody['stripped-text'];
+  }
   var messageSender = postBody['sender'];
 
   var messageFrom = postBody['From'];
