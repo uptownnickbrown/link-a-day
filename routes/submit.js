@@ -38,18 +38,21 @@ var parseInboundLink = function(postBody,callback) {
     blurb: messageBody,
     title: messageSubject
   };
-
-  request(recommendation.url, function (error, response, html) {
-    if (!error && response.statusCode == 200) {
-      var $ = cheerio.load(html,{ normalizeWhitespace: true, decodeEntities: true });
-      var title = $('title').text();
-      recommendation.title = title;
-    }
-    else {
-      console.log("Error parsing URL: " + response.statusCode);
-    }
+  if (validUrl.isWebUri(recommendation.url)) {
+    request(recommendation.url, function (error, response, html) {
+      if (!error && response.statusCode == 200) {
+        var $ = cheerio.load(html,{ normalizeWhitespace: true, decodeEntities: true });
+        var title = $('title').text();
+        recommendation.title = title;
+      }
+      else {
+        console.log("Error parsing URL: " + response.statusCode);
+      }
+      callback(recommendation);
+    });
+  } else {
     callback(recommendation);
-  });
+  }
 };
 
 var addToLinkQueue = function(recommendation,recommenderId) {
