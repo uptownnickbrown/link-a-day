@@ -1,8 +1,491 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  padding-bottom: 20px;
 }
 
-a {
-  color: #00B7FF;
+.logo {
+  height:43px;
+  display:block;
+  float:left;
+  padding-top:7px;
+  margin-right:14px;
+}
+
+#bracket {
+  padding-top: 50px;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
+.footer > .container {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+code {
+  font-size: 80%;
+}
+.jumbotron {
+  font-size: 3.4em;
+  padding-top: 1.8em;
+  padding-bottom: 2.4em;
+  margin-top: 25px;
+  margin-bottom: 0;
+  font-family: 'Oswald', sans-serif;
+}
+#seeding-4 {
+  background: url("../img/bgs/2475373247_6095e3b817_o.jpg") no-repeat center center;
+  background-size: cover;
+  color: #fff;
+  text-shadow: 2px 2px #333;
+}
+#seeding-2 {
+  background: url("../img/bgs/adam-elmakias-08.jpg") no-repeat center center;
+  background-size: cover;
+  color: #333;
+  text-shadow: 2px 2px #ccc;
+}
+#seeding-3 {
+  background: url("../img/bgs/14765615978_59d426f66e_k.jpg") no-repeat center center;
+  background-size: cover;
+  color: #fff;
+  text-shadow: 2px 2px #333;
+}
+#seeding-1 {
+  background: url("../img/bgs/tumblr_static_img_0584.jpg") no-repeat center center;
+  background-size: cover;
+  color: #fff;
+  text-shadow: 2px 2px #333;
+}
+
+.postImage {
+  max-width: 90%;
+}
+
+ul {
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+h5 {
+font-family: 'Roboto Slab', serif;
+font-weight:500;
+}
+
+h2, h3, li {
+  font-family: 'Roboto Slab', serif;
+}
+
+hr {
+  margin-bottom: -1em;
+  width:60%;
+}
+
+.contestantName {
+  font-weight:700;
+  margin-top:2em;
+}
+
+p, blockquote {
+  font-family: 'Lato', sans-serif;
+}
+
+blockquote {
+  font-size:.9em;
+
+}
+
+p, h5 {
+  font-size: 1.2em;
+  font-weight:300;
+}
+h3 {
+  margin-bottom: 20px;
+}
+.dropdown, .nav li {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+}
+.navbar-brand {
+  font-size: 28px;
+  line-height: 50px;
+  padding: 0 25px 0 15px;
+  font-family: 'Oswald', sans-serif;
+  color: #666;
+}
+
+.glyphicon {
+  padding-right:20px;
+}
+
+/* The real bracket */
+
+#chart {
+  margin-top: 7px;
+  width: 100%;
+}
+.winners-circle {
+  margin: 0 auto;
+  width: 65px;
+  height: 65px;
+  padding: 20px;
+  background-color: #f7f7f7;
+  color: #000;
+  border-width: 2px;
+  border-color: #ccc;
+  border-style: solid;
+  border-radius: 50%;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+}
+path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+.node, .regionoption {
+  fill: #ccc;
+  stroke: #666;
+  cursor: pointer;
+}
+.node:hover, .regionoption:hover {
+  fill: #49C5CA;
+  cursor: pointer;
+}
+.activenode, .activeregion {
+  fill: #49C5CA;
+}
+.nodelabel {
+  font-size: 16px;
+  stroke: #333;
+  fill: #333;
+  font-family: 'Lato', sans-serif;
+}
+.regionrect {
+  x: 60px;
+  width: 134px;
+  height: 40px;
+  stroke-width: 1px;
+}
+.regionlabel {
+  font-size: 12px;
+  stroke: #333;
+  fill: #333;
+  font-family: 'Lato', sans-serif;
+}
+.svg-container {
+  position: relative;
+  width: 104%;
+  padding-bottom: 104%;
+  margin-left:-2%;
+  /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+}
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+}
+#bracketWrapper {
+  position: relative;
+}
+#regionSelector {
+  display: block;
+  position: relative;
+}
+
+#regionSelector svg {
+  width: 100%;
+  height: 130px;
+}
+
+.regionoption:nth-of-type(1){
+  transform: translate(-35px,25px);
+}
+.regionoption:nth-of-type(2){
+  transform: translate(123px,-35px);
+}
+.regionoption:nth-of-type(3){
+  transform: translate(-35px,-35px);
+}
+.regionoption:nth-of-type(4){
+  transform: translate(123px,-95px);
+}
+
+/* Profile Section */
+
+#profile {
+  z-index: 99;
+  position: absolute;
+  top: 6%;
+  right: 2%;
+  width: 96%;
+  display:none;
+  opacity:0;
+  padding: 8px 12px 8px 8px;
+  border:1.5px solid #666;
+  border-radius: 6px;
+  background: white;
+  box-sizing: border-box;
+  cursor:pointer;
+}
+.profilePic {
+  display: block;
+  float: left;
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+.name {
+  display: inline-block;
+  float: left;
+  line-height: 70px;
+  font-size:18px;
+  margin: 0 0 0 10px;
+}
+.bio {
+  float: left;
+  width: 100%;
+  margin-left: 5px;
+  margin-top: 10px;
+  max-height: 320px;
+  font-size: 14px;
+  overflow: scroll;
+}
+
+.songs {
+  float: left;
+  width: 100%;
+  margin-left: 5px;
+  max-height: 100px;
+  overflow: scroll;
+  font-weight:500;
+}
+
+.spotify-embed {
+  width:100%;
+  margin:0 auto;
+  padding: 0 15px 0 15px;
+}
+
+/* Extra small devices (phones, less than 660px) */
+/* No media query since this is the default in Bootstrap */
+
+/* smallish devices */
+@media (min-width: 620px) {
+  .svg-container {
+    position: relative;
+    width: 80%;
+    padding-bottom: 80%;
+    margin-left:0;
+  }
+  #regionSelector {
+    bottom: -5%;
+    right: 0%;
+  }
+
+#regionSelector svg {
+    transform:translate(6%,4%);
+}
+
+  .regionrect {
+    x: 60px;
+    width: 134px;
+    height: 40px;
+  }
+  .regionlabel {
+    font-size: 12px;
+  }
+  #profile {
+    right: 20%;
+    width: 60%;
+    cursor: default;
+  }
+
+  .name {
+    font-size:20px;
+  }
+
+  body {
+    cursor:default;
+  }
+
+  #regionSelector {
+    position: absolute;
+  }
+
+  #regionSelector svg {
+    width: 254px;
+    height:244px;
+  }
+  .regionoption:nth-of-type(1){
+    transform: translate(0,0);
+  }
+  .regionoption:nth-of-type(2){
+    transform: translate(0,0);;
+  }
+  .regionoption:nth-of-type(3){
+    transform: translate(0,0);;
+  }
+  .regionoption:nth-of-type(4){
+    transform: translate(0,0);;
+  }
+
+}
+
+/* Small devices (tablets, 768px and up) */
+
+@media (min-width: 768px) {
+  #chart {
+    margin-top: 9px;
+  }
+  .svg-container {
+    position: relative;
+    width: 88%;
+    padding-bottom: 88%;
+  }
+  #regionSelector {
+    right:-3%;
+  }
+
+  #regionSelector svg {
+      transform:translate(0%,0%);
+  }
+
+  .regionrect {
+    x: 60px;
+    width: 134px;
+    height: 40px;
+    dy: 24px;
+  }
+  .regionlabel {
+    font-size: 12px;
+  }
+  #profile {
+    right: 20%;
+    width: 60%;
+  }
+  .spotify-embed {
+    padding: 0 40px 0 40px;
+  }
+}
+
+/* Medium devices (desktops, 992px and up) */
+
+@media (min-width: 992px) {
+  #chart {
+    margin-top: 12px;
+  }
+  .svg-container {
+    position: relative;
+    width: 65%;
+    padding-bottom: 65%;
+  }
+  #regionSelector {
+    bottom: 0%;
+    right: 3.2%;
+  }
+  .regionrect {
+    x: 1px;
+    width: 250px;
+  }
+  .regionlabel {
+    font-size: 22px;
+    line-height: 60px;
+  }
+  #profile {
+    right: 0%;
+    width: 34%;
+    top: 10px;
+  }
+  .bio {
+    max-height: 208px;
+  }
+  .spotify-embed {
+    width:300px;
+    padding: 0 5px 0 0px;
+  }
+  .postImage {
+    max-width: 60%;
+  }
+  .profilePic {
+    width:50px;
+  }
+  .name {
+    font-size:18px;
+  }
+}
+
+/* Large devices (large desktops, 1200px and up) */
+
+@media (min-width: 1200px) {
+  #chart {
+    margin-top: 15px;
+  }
+  .svg-container {
+    position: relative;
+    width: 60%;
+    padding-bottom: 60%;
+  }
+  #regionSelector {
+    bottom: 4%;
+    right: 73px;
+  }
+  #profile {
+    right: 0px;
+    width: 400px;
+    top: 10px;
+  }
+  .profilePic {
+    width:75px;
+    height:75px;
+  }
+  .name {
+    line-height:75px;
+    font-size:22px;
+  }
+  .bio {
+    max-height: 238px;
+  }
+}
+
+.image {
+  width:40%;
+}
+
+.left {
+  float:left;
+  width:50%;
+  display:block;
+  margin:0 auto;
+}
+
+.right {
+  width:50%;
+  float:right;
+  display:block;
+  margin:0 auto;
+}
+
+.right p {
+  padding-left: 25px;
+  padding-top: 75px;
+  font-size: 1.8em;
+}
+.left p {
+  padding-right: 25px;
+  padding-top: 75px;
+  font-size: 1.8em;
+}
+
+.row {
+  margin: 25px auto;
+  width:80%;
 }
