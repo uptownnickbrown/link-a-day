@@ -75,6 +75,8 @@
           submissionsRef.once('value', function(snapshot) {
             var links = snapshot.val();
             var linkKeys = Object.keys(links);
+            linkKeys.sort()
+            linkKeys.reverse()
             var i = 0;
 
             while (i<10) {
