@@ -22,10 +22,7 @@ var connectionsRef = db.ref("connections");
 // Parse POST request body into fields we care about
 var parseInboundLink = function(postBody,callback) {
   var messageSubject = postBody['subject'];
-  var messageBody = postBody['stripped-html'];
-  if (!(messageBody)) {
-    messageBody = postBody['stripped-text'];
-  }
+  var messageBody = postBody['stripped-text'];
   var messageSender = postBody['sender'];
 
   var messageFrom = postBody['From'];
@@ -44,9 +41,16 @@ var parseInboundLink = function(postBody,callback) {
         var $ = cheerio.load(html,{ normalizeWhitespace: true, decodeEntities: true });
         var title = $('title').text();
         recommendation.title = title;
+        if (recommendation.title = '') {
+          recommendation.title = recommendation.submitterName + "'s great link!";
+        }
+        if (recommendation.title.indexOf('Login') > -1) {
+          recommendation.title = recommendation.submitterName + "'s great link!";
+        }
       }
       else {
         console.log(error); // log the error but just keep trucking with the URL as the title
+        recommendation.title = recommendation.submitterName + "'s great link!";
       }
       callback(recommendation);
     });
