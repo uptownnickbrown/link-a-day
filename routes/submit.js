@@ -44,7 +44,7 @@ var parseInboundLink = function(postBody,callback) {
         if (recommendation.title == '') {
           recommendation.title = recommendation.submitterName + "'s great link!";
         }
-        if (recommendation.title.indexOf('Login') > -1) {
+        if (recommendation.title.indexOf('Login') > -1 || recommendation.title.indexOf('Log In') > -1) {
           recommendation.title = recommendation.submitterName + "'s great link!";
         }
       }
