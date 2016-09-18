@@ -8,7 +8,7 @@ var firebase = require('firebase');
 
 // Init DB access
 var firebaseApp = firebase.initializeApp({
-  serviceAccount: "./link-a-day-9ece42ff92f0.json",
+  serviceAccount: "./link-a-day-74e6b225f6c5.json",
   databaseURL: "https://link-a-day.firebaseio.com"
 });
 
