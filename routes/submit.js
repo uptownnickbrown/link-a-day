@@ -41,7 +41,7 @@ var parseInboundLink = function(postBody,callback) {
         var $ = cheerio.load(html,{ normalizeWhitespace: true, decodeEntities: true });
         var title = $('title').text();
         recommendation.title = title;
-        if (recommendation.title = '') {
+        if (recommendation.title == '') {
           recommendation.title = recommendation.submitterName + "'s great link!";
         }
         if (recommendation.title.indexOf('Login') > -1) {
