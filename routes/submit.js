@@ -156,7 +156,7 @@ router.post('/', function(req, res) {
             var outboundHTML = buildHTML(recommendation,outboundRecommendation);
             console.log('Got a good recommendation, sending out a new one.')
             mailgun.messages().send({
-              from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
+              from: 'Link-a-Day <link-a-day@mg.uptownnickbrown.com>',
               to: recommendation.submitterEmail,
               subject: outboundRecommendation.title + ' - New Recommendation from Link-a-Day',
               html: outboundHTML
@@ -182,7 +182,7 @@ router.post('/', function(req, res) {
       console.log('Hit a problem - sending out the failure email');
       // Not a valid URL - send them a reply to re-submit with the proper formatting
       mailgun.messages().send({
-        from: 'Link-a-Day <link-a-day@mg.quanticle.co>',
+        from: 'Link-a-Day <link-a-day@mg.uptownnickbrown.com>',
         to: recommendation.submitterEmail,
         subject: 'Failed to add your link',
         html: buildFailure(recommendation)
